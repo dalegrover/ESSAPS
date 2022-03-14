@@ -17,8 +17,8 @@ The hardware components of this power supply are:
 * 10-15A, 24-50V fixed or variable voltage switching power supply.  A popular brand would be "Mean Well".   24V is likely just sufficient for just anodizing; 48-50V is useful if wire-bonding will be used.
 * DPS5015 or DPS5020 Constant-Current/Constant-Voltage buck regulator.  Make sure it supports communication (sometimes sold with a USB converter or Bluetooth, though neither adapter is used for this project).  The DPS3012 will not work--it does not apparently support ModBus.
 * ESP-WROOM-32 module.  Make sure the metal shield says "ESP-WROOM-32"--other versions may not work with this code.
-* JST-XX 4-pin female cable
-* If CDW is desired, a 50,000 to 90,000 uF (i.e., 0.05 to 0.1 F) electrolytic capacitor rated at least 5-10V more than the maximum power supply output, plus a dual relay module.
+* JST-GH 1.25mm 4-pin female cable
+* If CDW is desired, a large value (i.e., 0.1 F or more) electrolytic capacitor rated at least 5-10V more than the maximum power supply output, plus a dual relay module.
 * Wire, Mini-PV connectors ("DuPont"), AC power switch, circuit breaker, enclosure, fan, fan filters, banana connectors, etc.
 
 Build the code using the Arduino IDE.  Follow the directions to add the ESP32 support to Arduino from, for example, https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html
