@@ -1,5 +1,5 @@
 # ESSAPS: Experimental Small-Scale Anodizing Power Supply
-
+![Anodizing power supply front view](https://github.com/dalegrover/ESSAPS/blob/main/images/AnodizeFront.jpg)
 The goal of this project is to create an automated power supply to support small-scale anodizing.  By “small-scale”, the output is in the range of 10-15A; this is sufficient for anodizing surfaces of around 1 ft^2 at 12 ASF (amp per sq. ft), or up to around 3 ft^2 at “low current density” (LCD) rates of about 4.5 ASF.
 The user interface is via a web page served over WiFi.  The pages are simple HTML--no Javascript, etc.
 
