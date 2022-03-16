@@ -21,4 +21,6 @@ The hardware components of this power supply are:
 * If CDW is desired, a large value (i.e., 0.1 F or more) electrolytic capacitor rated at least 5-10V more than the maximum power supply output, plus a dual relay module.
 * Wire, Mini-PV connectors ("DuPont"), AC power switch, circuit breaker, enclosure, fan, fan filters, banana connectors, etc.
 
+The hardware is in a good state.  The software is usable, but needs improvement.
+
 See the project wiki for more details:  https://github.com/dalegrover/ESSAPS/wiki
