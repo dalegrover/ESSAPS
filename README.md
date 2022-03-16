@@ -35,4 +35,4 @@ Settings:
 * PSRAM: "Disabled"
 You may need to select the appropriate USB serial port.
 
-See the project wiki for more details.
+See the project wiki for more details:  https://github.com/dalegrover/ESSAPS/wiki
