@@ -21,18 +21,4 @@ The hardware components of this power supply are:
 * If CDW is desired, a large value (i.e., 0.1 F or more) electrolytic capacitor rated at least 5-10V more than the maximum power supply output, plus a dual relay module.
 * Wire, Mini-PV connectors ("DuPont"), AC power switch, circuit breaker, enclosure, fan, fan filters, banana connectors, etc.
 
-Build the code using the Arduino IDE.  Follow the directions to add the ESP32 support to Arduino from, for example, https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html
-It should then be possible to connect a USB cable to the ESP-32 and program it.
-Settings:
-* Board: "ESP32 Dev Module"
-* Upload Speed: "921600"
-* CPU Frequency: "240MHz (WiFi/BT)"
-* Flash Frequency: "80MHz"
-* Flash Mode: "QIO"
-* Flash Size: "4MB (32Mb)"
-* Partition Scheme: "Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)"
-* Core Debug Level: "None"
-* PSRAM: "Disabled"
-You may need to select the appropriate USB serial port.
-
 See the project wiki for more details:  https://github.com/dalegrover/ESSAPS/wiki
