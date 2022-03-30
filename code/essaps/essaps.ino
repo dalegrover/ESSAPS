@@ -192,7 +192,7 @@ void setup()
   // factory default is 9600, can go to 19200
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
 
-  delay(2000); // let things settle (was 5000)
+  delay(4000); // let things settle (was 5000)
 
   // set to defaults, disable outputs
   setModBusRegVerified(REG_ONOFF_SET, 0); // 0=off, disable output
@@ -232,16 +232,16 @@ void setup()
 
   // defaults
   anodizingAreaIn = 144.0; // area in inches (total, all surfaces/sides)
-  anodizingASF = 6.0; // for LCD (low current density anodizing), 6 ASF and below
+  anodizingASF = 4.5; // for LCD (low current density anodizing), 6 ASF and below
   anodizingThickness = 0.7; // 0.0007" = 0.7 mils thickness
-  anodizingRampTime = 0.5; // default ramp time in minutes
+  anodizingRampTime = 5; // default ramp time in minutes
   anodizingDeltaV = 0.05; // change in V to halt cycle (if enabled)
   anodizingEnableDeltaV = false;
   calculateParams();
 
   // CDW capacitor--this is default, but can test and set programmatically too
-  CDWCapacitance = 0.01; // 10,000 uF
-  CDWEnergy = 10.0; // 10J
+  CDWCapacitance = 0.091; // 91,000 uF
+  CDWEnergy = 20.0; // 20J, default energy per weld
   calculateCDWVoltage();
 
   // Energy in CDW capacitor is 1/2 C V^2
@@ -259,7 +259,7 @@ void setup()
 
 // This array maps ASF to PAR
 // May need adjusting for sodium bifsulfate; may not be accurate.
-// Some folks just use 0.95 ohm for everything...
+// Some folks just use 0.95 ohm for everything, but I believe that may apply at high ASF
 // 0 to 24 ASF
 float ASFtoPAR[] = {5.00, 4.00, 3.00, 2.67, 2.50, 2.33, 2.17, 2.09, 2.00, 1.92, 1.84, 1.75, 1.67, 1.61, 1.55, 1.49, 1.43, 1.37, 1.31, 1.25, 1.19, 1.13, 1.07, 1.01, 0.95};
 
