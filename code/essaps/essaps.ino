@@ -1,5 +1,6 @@
 // ESSAPS
 // Experimental Small-Scale Anodizing Power Supply
+// 5.2
 //
 // Anodizing power supply and capacitor-discharge welder
 // For ESP-WROOM-32 module connected to DPS5015 power supply
@@ -66,6 +67,7 @@
 // for debugging without connecting to an actual DPS unit,
 // set NO_DPS in DPS5015.h
 
+const char* progVersion = "5.3";
 
 // SSID & Password
 const char* ssid = "Anodizer5";  // Enter the SSID here for this device
@@ -199,7 +201,7 @@ void setup()
   // now calculate maximum output voltage, which is Vout = Vin/1.1
   maxVoltage = getModBusReg(REG_VIN_READ) / 100.0 / 1.1;
   setModBusRegVerified(REG_V_SET, int(maxVoltage * 100)); // set MAX_VOLTAGE * 100
-  setModBusRegVerified(REG_I_SET, 0005); // set 00.05A, minimal current
+  setModBusRegVerified(REG_I_SET, 5); // set 00.05A, minimal current
 
   // set up web server
   // Create SoftAP
@@ -211,7 +213,9 @@ void setup()
   delay(2000); // this delay is "very important"--bug in kernal?
   WiFi.softAPConfig(local_ip, gateway, subnet);
 
-  Serial.print("\n\n----------------\nAnodizer V5\n----------------\n");
+  Serial.print("\n\n----------------\nAnodizer v");
+  Serial.print(progVersion);
+  Serial.print("\n----------------\n");
   Serial.print("Access point: ");
   Serial.println(ssid);
   Serial.println(password);
@@ -404,6 +408,7 @@ void loop()
       statusString = "Ramping";
       // turn on anodizing LED
       digitalWrite(LED_ANODIZE, LED_ON);
+      digitalWrite(RELAY_1, RELAY_OFF); // connect anodize socket
     // fall through to ramp state
 
     // ramping up
@@ -433,7 +438,7 @@ void loop()
       currentTime = getSeconds(); // time since start in seconds
       if ( (currentTime - startTime) >= anodizingMaxTime * 60)
       {
-        setModBusRegVerified(REG_I_SET, 0000);  // turn off current
+        setModBusRegVerified(REG_I_SET, 0);  // turn off current
         setModBusRegVerified(REG_ONOFF_SET, 0); // disable output
         state = STATE_TIMED_OUT;
         statusString = "Timed Out";
@@ -457,7 +462,7 @@ void loop()
       {
         if ( voltage + anodizingDeltaV <= anodizingMaxV)
         {
-          setModBusRegVerified(REG_I_SET, 0000);  // turn off current
+          setModBusRegVerified(REG_I_SET, 0);  // turn off current
           setModBusRegVerified(REG_ONOFF_SET, 0); // disable output
           state = STATE_DELTA_V;
           // turn off LED
@@ -485,7 +490,7 @@ void loop()
       break;
 
     case STATE_PAUSE:
-      setModBusRegVerified(REG_I_SET, 0000);  // turn off current
+      setModBusRegVerified(REG_I_SET, 0);  // turn off current
       setModBusRegVerified(REG_ONOFF_SET, 0); // disable output
       pauseState = state; // capture the state pause is hit in
       state = STATE_PAUSED;
@@ -501,7 +506,7 @@ void loop()
       break;
 
     case STATE_STOP:
-      setModBusRegVerified(REG_I_SET, 0000);  // turn off current
+      setModBusRegVerified(REG_I_SET, 0);  // turn off current
       setModBusRegVerified(REG_ONOFF_SET, 0); // disable output
       state = STATE_STOPPED;
       statusString = "Stop button pressed";
@@ -526,7 +531,7 @@ void loop()
         // set voltage to max output voltage
         setModBusRegVerified(REG_V_SET, int(maxVoltage * 100) ); // set voltage
         // set current to 0.1A
-        setModBusRegVerified(REG_I_SET, 0010);  // current to 00.10A
+        setModBusRegVerified(REG_I_SET, 10);  // current to 00.10A
         // turn on output
         setModBusRegVerified(REG_ONOFF_SET, 1); // enable output
         // wait 5 seconds
@@ -564,7 +569,7 @@ void loop()
       // set voltage
       setModBusRegVerified(REG_V_SET, (int)(CDWVoltage * 100));
       // set current to 1A--just an arbitrary rate, should be less than 5 seconds to full charge at 1F 50V
-      setModBusRegVerified(REG_I_SET, 0100);  // current to 01.00A
+      setModBusRegVerified(REG_I_SET, 100);  // current to 01.00A
       // turn on output
       setModBusRegVerified(REG_ONOFF_SET, 1); // enable output
       Serial.print(" done in "); // debug
@@ -589,7 +594,7 @@ void loop()
       if ( voltage + 0.5 >= CDWVoltage )
       {
         // switch over to 0.05A
-        setModBusRegVerified(REG_I_SET, 0005);  // current to 0.050A (the smallest supported)
+        setModBusRegVerified(REG_I_SET, 5);  // current to 0.050A (the smallest supported)
         state = STATE_CDW_READY;
         digitalWrite(LED_CDW, LED_ON); // CDW ready LED
       }
@@ -601,7 +606,7 @@ void loop()
       if ( voltage < 1.0 )
       {
         // set output voltage to 2V (still at 0.050A)
-        setModBusRegVerified(REG_V_SET, 0200);  // voltage to 02.00 V
+        setModBusRegVerified(REG_V_SET, 200);  // voltage to 02.00 V
         state = STATE_CDW_WAIT_TO_RESET;
         digitalWrite(LED_CDW, LED_OFF); // turn off CDW LED
       }
@@ -784,17 +789,23 @@ void handle_root()
     {
       html += "<meta http-equiv='refresh' content='5; URL=http://192.168.1.1'/>"; // every 5 seconds
     }
-    html += "<title>Anodizer V5</title>\
-    <body>\
+    sprintf(temp,"<title>Anodizer v%s</title>", progVersion);
+    html += temp;
+    html += "<body>\
     <meta name=\"viewport\" content = \"width=device-width\">\
     <style>\
       body { \
       width: 320px;\
       font: 14pt Helvetica, sans-serif;\
       } \
-    </style>\
-    <h1>Anodizer V5</h1>\
-    <h2>Anodizing Mode</h2>";
+      .btn { \
+      font-size: 14pt; \
+      } \
+    </style>";
+    sprintf(temp,"<h1>Anodizer v%s</h1>", progVersion);
+    html += temp;
+
+    html += "<h2>Anodizing Mode</h2>";
 
     // status line
     sprintf(temp, " State:  %s<br>", stateNames[state]);
@@ -812,7 +823,7 @@ void handle_root()
       ASF <input type=text name=ASF value=\"%0.2f\"> A/ft^2<br>\
       Thickness <input type=text name=thickness value=\"%0.1f\"> mils<br>\
       Ramp Time <input type=text name=rampTime value=\"%.1f\"> min<br>\
-      <input type=submit name=calcButton value=\"CALCULATE BELOW\">\
+      <input class=\"btn\" type=submit name=calcButton value=\"CALCULATE BELOW\">\
       </form><hr>", anodizingAreaIn, anodizingASF, anodizingThickness, anodizingRampTime);
       html += temp;
 
@@ -826,7 +837,7 @@ void handle_root()
       Est. V-peak %0.1f V / (PS Max %0.1f V)<br>\
       <input type=checkbox name=enableDeltaV value=unchecked> Delta V <input type=text name=deltaV value=\"%0.2f\"> V<br>\
       <input type=checkbox name=enablePiezo %s> Buzzer<br>\
-      <input type=submit name=goButton value=\"GO\">\
+      <input class=\"btn\" type=submit name=goButton value=\"GO\">\
       </form><hr>", anodizingAreaIn, anodizingAreaFt, anodizingCurrent, anodizingRampTime, \
               anodizingMaxTime, anodizingPAR, anodizingVPeak, maxVoltage, anodizingDeltaV, piezoEnable ? "checked" : "");
       html += temp;
@@ -884,20 +895,30 @@ void handle_root()
       html += temp;
     }
 
+    // add button to return to anodize state
+    if ( (state == STATE_STOPPED) || (state==STATE_STOP) )
+    {
+      // anodize button
+      html += "<form method=GET action=\"\">\
+      <!-- <input type=hidden name=anodize value=\"none\">\ --> \
+      <input class=\"btn\" type=submit name=anodizeButton value=\"ANODIZE MODE\">\
+      </form>\<br>";
+    }
+
     // add buttons for Stop and Pause
     html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=stop value=\"none\">\ --> \
-      <input type=submit name=stopButton value=\"STOP\">\
+      <input class=\"btn\" type=submit name=stopButton value=\"STOP\">\
       </form>\
       <form method=GET action=\"\">\
       <!-- <input type=hidden name=pause value=\"none\">\ --> \
-      <input type=submit name=pauseButton value=\"PAUSE\">\
+      <input class=\"btn\" type=submit name=pauseButton value=\"PAUSE\">\
       </form><br>";
 
     // add button for CDW mode
     html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=CDW value=\"none\">\ --> \
-      <input type=submit name=CDWButton value=\"CDW WELD\">\
+      <input class=\"btn\" type=submit name=CDWButton value=\"CDW WELD\">\
       </form><br>";
 
     // add graph at bottom
@@ -907,7 +928,7 @@ void handle_root()
     // add button for dump data
     html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=dumpdata value=\"dumpdata\">\ --> \
-      <input type=submit name=dumpdataButton value=\"dumpdata\">\
+      <input class=\"btn\" type=submit name=dumpdataButton value=\"dumpdata\">\
       </form><br>";
 
     // dump data?
@@ -953,17 +974,23 @@ void handle_root()
     {
       html += "<meta http-equiv='refresh' content='1; URL=http://192.168.1.1'/>"; // update every second during cap test, other CDW modes
     }
-    html += "<title>Anodizer V5</title>\
-    <body>\
+    sprintf(temp,"<title>Anodizer v%s</title>", progVersion);     // html += "<title>Anodizer V5</title>"
+    html += temp;
+    html += "<body>\
     <meta name=\"viewport\" content = \"width=device-width\">\
     <style>\
       body { \
       width: 320px;\
       font: 14pt Helvetica, sans-serif;\
       } \
-    </style>\
-    <h1>Anodizer V5</h1>\
-    <h2>CDW Mode</h2>";
+      .btn { \
+      font-size: 14pt; \
+      } \
+    </style>";
+    sprintf(temp,"<h1>Anodizer v%s</h1>", progVersion);
+    html += temp;
+    //<h1>Anodizer V5</h1>
+    html += "<h2>CDW Mode</h2>";
 
     // status line
     sprintf(temp, " State:  %s<br>", stateNames[state]);
@@ -982,7 +1009,7 @@ void handle_root()
       // cap test mode
       html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=capTest value=\"none\">\ --> \
-      <input type=submit name=capTestButton value=\"CAP TEST\">\
+      <input class=\"btn\" type=submit name=capTestButton value=\"CAP TEST\">\
       </form>\<br>";
 
       float maxEnergy;
@@ -990,7 +1017,7 @@ void handle_root()
 
       sprintf(temp, "<hr><form method=GET action=\"\">\
       Energy <input type=text name=energy value=\"%0.2f\"> J (Max is %0.1f J)<br>\
-      <input type=submit name=calcVoltageButton value=\"CALCULATE VOLTAGE\">\
+      <input class=\"btn\" type=submit name=calcVoltageButton value=\"CALCULATE VOLTAGE\">\
       </form><hr>", CDWEnergy, maxEnergy);
       html += temp;
 
@@ -1000,7 +1027,7 @@ void handle_root()
       // CDW buttons
       html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=CDWGo value=\"none\">\ --> \
-      <input type=submit name=CDWGoButton value=\"Weld\">\
+      <input class=\"btn\" type=submit name=CDWGoButton value=\"Weld\">\
       </form>\<br>";
 
       html += "<hr><br><br>";
@@ -1008,7 +1035,7 @@ void handle_root()
       // anodize button
       html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=anodize value=\"none\">\ --> \
-      <input type=submit name=anodizeButton value=\"ANODIZE MODE\">\
+      <input class=\"btn\" type=submit name=anodizeButton value=\"ANODIZE MODE\">\
       </form>\<br>";
     }
     else if ( (state == STATE_CDW_CHARGE) || (state == STATE_CDW_CHARGING)  || (state == STATE_CDW_WAIT_TO_RESET)  || (state == STATE_CDW_READY))
@@ -1020,7 +1047,7 @@ void handle_root()
 
       html += "<form method=GET action=\"\">\
       <!-- <input type=hidden name=CDWStop value=\"none\">\ --> \
-      <input type=submit name=CDWStopButton value=\"STOP\">\
+      <input class=\"btn\" type=submit name=CDWStopButton value=\"STOP\">\
       </form>\<br>";
 
     }
