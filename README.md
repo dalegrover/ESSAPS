@@ -23,4 +23,6 @@ The hardware components of this power supply are:
 
 The hardware is in a good state.  The software is usable, but needs improvement.
 
+Warning:  This process involves powerful chemicals, high voltage, and the discharge of very high current.  It is critical to use all appropriate safety measures when using this device and process.  The author is not a professional anodizer and may be unaware of other hazards.  Consult a professional before using.  Any use is at your own risk.
+
 See the project wiki for more details:  https://github.com/dalegrover/ESSAPS/wiki
